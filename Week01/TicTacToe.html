@@ -24,12 +24,12 @@
   </body>
   <script>
     let pattern = [
-      [2, 0, 0],
-      [0, 1, 0],
+      [0, 0, 0],
+      [0, 0, 0],
       [0, 0, 0],
     ]
 
-    function show(pattern, hasWinner) {
+    function show(hasWinner) {
       let board = document.getElementById('board')
       board.innerHTML = ''
       for (let i = 0; i < 3; i++) {
@@ -40,7 +40,7 @@
             pattern[i][j] == 2 ? '❌' : pattern[i][j] == 1 ? '⭕️' : ''
           if (!hasWinner) {
             cell.addEventListener('click', () => {
-              move(j, i)
+              userMove(j, i)
             })
           }
           board.appendChild(cell)
@@ -49,19 +49,17 @@
       }
     }
 
-    let color = 2
+    let color = 1
 
-    function move(x, y) {
+    function userMove(x, y) {
       pattern[y][x] = color
       let hasWinner = check(pattern, color)
       if (hasWinner) {
         alert(color == 2 ? '❌ is winner' : '⭕️ is winner')
       }
       color = 3 - color
-      show(pattern, hasWinner)
-      if (willWin(pattern, color)) {
-        console.log(color == 2 ? '❌ will win' : '⭕️ will win')
-      }
+      show(hasWinner)
+      computerMove()
     }
 
     function check(pattern, color) {
@@ -120,11 +118,53 @@
           let tmp = JSON.parse(JSON.stringify(pattern))
           tmp[i][j] = color
           if (check(tmp, color)) {
-            return true
+            return [j, i]
           }
         }
       }
+      return null
     }
-    show(pattern)
+    function bestChoice(pattern, color) {
+      let point = willWin(pattern, color)
+      if (point) {
+        return {
+          point: point,
+          result: 1,
+        }
+      }
+      let result = -2
+      outer: for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+          if (pattern[i][j]) continue
+          let tmp = JSON.parse(JSON.stringify(pattern))
+          tmp[i][j] = color
+          let r = bestChoice(tmp, 3 - color).result
+          if (-r > result) {
+            result = -r
+            point = [j, i]
+          }
+          if (result == 1) {
+            break outer
+          }
+        }
+      }
+      return {
+        point: point,
+        result: point ? result : 0,
+      }
+    }
+
+    function computerMove() {
+      let choice = bestChoice(pattern, color)
+      if (choice.point) {
+        pattern[choice.point[1]][choice.point[0]] = color
+      }
+      if (check(pattern, color)) {
+        alert(color == 2 ? '❌ is winner' : '⭕️ is winner')
+      }
+      color = 3 - color
+      show()
+    }
+    show()
   </script>
 </html>
