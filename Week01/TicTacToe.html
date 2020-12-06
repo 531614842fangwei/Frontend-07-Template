@@ -29,7 +29,7 @@
       [0, 0, 0],
     ]
 
-    function show() {
+    function show(pattern, hasWinner) {
       let board = document.getElementById('board')
       board.innerHTML = ''
       for (let i = 0; i < 3; i++) {
@@ -38,9 +38,11 @@
           cell.classList.add('cell')
           cell.innerText =
             pattern[i][j] == 2 ? '❌' : pattern[i][j] == 1 ? '⭕️' : ''
-          cell.addEventListener('click', () => {
-            move(j, i)
-          })
+          if (!hasWinner) {
+            cell.addEventListener('click', () => {
+              move(j, i)
+            })
+          }
           board.appendChild(cell)
         }
         board.appendChild(document.createElement('br'))
@@ -51,10 +53,78 @@
 
     function move(x, y) {
       pattern[y][x] = color
+      let hasWinner = check(pattern, color)
+      if (hasWinner) {
+        alert(color == 2 ? '❌ is winner' : '⭕️ is winner')
+      }
       color = 3 - color
-      show()
+      show(pattern, hasWinner)
+      if (willWin(pattern, color)) {
+        console.log(color == 2 ? '❌ will win' : '⭕️ will win')
+      }
     }
 
+    function check(pattern, color) {
+      for (let i = 0; i < 3; i++) {
+        let win = true
+        for (let j = 0; j < 3; j++) {
+          if (pattern[i][j] !== color) {
+            win = false
+          }
+        }
+        if (win) {
+          return true
+        }
+      }
+      for (let i = 0; i < 3; i++) {
+        let win = true
+        for (let j = 0; j < 3; j++) {
+          if (pattern[j][i] !== color) {
+            win = false
+          }
+        }
+        if (win) {
+          return true
+        }
+      }
+      {
+        let win = true
+        for (let i = 0; i < 3; i++) {
+          if (pattern[i][i] !== color) {
+            win = false
+          }
+        }
+        if (win) {
+          return true
+        }
+      }
+      {
+        let win = true
+        for (let i = 0; i < 3; i++) {
+          if (pattern[i][2 - i] !== color) {
+            win = false
+          }
+        }
+        if (win) {
+          return true
+        }
+      }
+    }
+
+    function willWin(pattern, color) {
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+          if (pattern[i][j]) {
+            continue
+          }
+          let tmp = JSON.parse(JSON.stringify(pattern))
+          tmp[i][j] = color
+          if (check(tmp, color)) {
+            return true
+          }
+        }
+      }
+    }
     show(pattern)
   </script>
 </html>
